@@ -13,6 +13,54 @@ st.set_page_config(
 # =========================
 
 st.markdown("""
+/* Hiệu ứng hoạt ảnh khi thực hiện hành động */
+@keyframes pixel-pop {
+    0%   { transform: scale(0.65); opacity: 0; }
+    65%  { transform: scale(1.08); opacity: 1; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes pixel-flash {
+    0%, 100% { filter: brightness(1); }
+    50%      { filter: brightness(1.8); }
+}
+
+@keyframes pixel-float {
+    0%   { transform: translateY(12px); opacity: 0; }
+    100% { transform: translateY(0); opacity: 1; }
+}
+
+.action-effect {
+    animation: pixel-pop 0.45s ease-out,
+               pixel-flash 0.8s ease-in-out 2;
+    border: 3px solid #ffd166;
+    border-radius: 8px;
+    padding: 16px;
+    margin: 12px 0;
+    background: #243d60;
+    text-align: center;
+    box-shadow: 4px 4px 0 #091321;
+}
+
+.action-effect .big-icon {
+    font-size: 48px;
+    animation: pixel-float 0.4s ease-out;
+}
+
+.action-effect p {
+    margin-bottom: 0;
+}
+
+.action-alert {
+    border-color: #ff5555;
+    background: #632b3b;
+}
+
+.action-success {
+    border-color: #55e6a5;
+    background: #174b43;
+}
+
 <style>
 .stApp {
     background: #101b2b;
