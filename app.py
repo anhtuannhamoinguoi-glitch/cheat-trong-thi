@@ -1,21 +1,72 @@
-
 import random
 import streamlit as st
-
-# ==========================================
-# 1. CAU HINH
-# ==========================================
+import streamlit.components.v1 as components
+==========================================
+1. CAU HINH
+==========================================
 st.set_page_config(
-    page_title="Dai chien phong thi",
-    page_icon="📝",
-    layout="wide",
-    initial_sidebar_state="collapsed"
+page_title="Dai chien phong thi",
+page_icon="📝",
+layout="wide"
 )
+==========================================
+2. AM THANH TAO BANG TRINH DUYET
+==========================================
+def sound_effect(kind):
+sounds = {
+"click": (660, 0.08),
+"bell": (880, 0.35),
+"win": (1040, 0.45),
+"lose": (180, 0.55),
+"alert": (330, 0.30),
+"rest": (520, 0.20),
+}
 
-# ==========================================
-# 2. CSS - PHONG CACH PIXEL ART
-# ==========================================
+    frequency, duration = sounds.get(kind, (440, 0.15))
+
+html = f"""
+    <html>
+    <body style="margin:0;background:transparent">
+    <button id="playSound"
+        style="padding:8px 12px;border:1px solid #4b90e2;
+        border-radius:5px;background:#12345c;color:white;
+        cursor:pointer;font-weight:bold;">
+        🔊 Phát âm thanh
+    </button>
+    <script>
+    const button = document.getElementById("playSound");
+    button.addEventListener("click", function() {{
+        const AudioContextClass =
+            window.AudioContext || window.webkitAudioContext;
+        if (!AudioContextClass) return;
+
+const ctx = new AudioContextClass();
+        const oscillator = ctx.createOscillator();
+        const gain = ctx.createGain();
+
+oscillator.type = "square";
+        oscillator.frequency.value = {frequency};
+        gain.gain.setValueAtTime(0.12, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(
+            0.001, ctx.currentTime + {duration}
+        );
+
+oscillator.connect(gain);
+        gain.connect(ctx.destination);
+        oscillator.start();
+        oscillator.stop(ctx.currentTime + {duration});
+        oscillator.onended = () => ctx.close();
+    }});
+    </script>
+    </body>
+    </html>
+    """
+    components.html(html, height=48)
+==========================================
+3. CSS PIXEL ART
+==========================================
 st.markdown("""
+
 <style>
 .stApp {
     background: #07162f;
@@ -24,156 +75,116 @@ st.markdown("""
 .block-container {
     max-width: 1450px;
     padding-top: 1rem;
-    padding-bottom: 2rem;
-}
-h1, h2, h3, p, label {
-    color: #eef5ff;
 }
 .pixel-title {
-    background: linear-gradient(90deg, #102c59, #174780);
+    background: #102c59;
     border: 3px solid #428bff;
-    border-radius: 10px;
-    padding: 14px;
-    color: white;
-    font-size: 27px;
-    font-weight: 900;
+    border-radius: 8px;
+    padding: 16px;
     text-align: center;
-    text-shadow: 2px 2px #07162f;
+    font-size: 30px;
+    font-weight: 900;
+    color: white;
     box-shadow: 0 5px 0 #061025;
 }
 .game-panel {
     background: #10294d;
     border: 3px solid #397bd2;
-    border-radius: 10px;
-    padding: 14px;
+    border-radius: 8px;
+    padding: 12px;
     margin-bottom: 12px;
-    box-shadow: 0 4px 0 #061025;
 }
 .room {
-    background: #e9b77c;
+    background-color: #e9b77c;
     border: 6px solid #8a4f32;
-    border-radius: 4px;
     padding: 10px;
-    color: #183153;
     text-align: center;
-    background-image:
-        repeating-linear-gradient(
-            0deg,
-            transparent,
-            transparent 38px,
-            rgba(120,65,32,0.16) 39px,
-            rgba(120,65,32,0.16) 42px
-        );
+    color: #183153;
+    background-image: repeating-linear-gradient(
+        0deg, transparent, transparent 35px,
+        rgba(120,65,32,.16) 36px, rgba(120,65,32,.16) 39px
+    );
 }
 .blackboard {
     background: #155743;
-    color: #f5f4d5;
-    border: 8px solid #92592e;
-    padding: 18px 8px;
-    margin: 4px auto 12px auto;
+    color: white;
+    border: 7px solid #92592e;
+    padding: 20px 5px;
+    margin: 4px auto 14px;
     max-width: 520px;
-    font-size: 22px;
-    font-weight: 900;
-    box-shadow: 0 5px 0 #57371f;
+    font-size: 24px;
+    font-weight: bold;
 }
-.teacher-area {
-    background: #dca16a;
-    border: 3px solid #94562e;
-    padding: 8px;
+.teacher {
+    background: #f8d7da;
+    border: 3px solid #842029;
+    padding: 10px;
     margin: 8px auto;
-    max-width: 300px;
+    max-width: 220px;
+    font-size: 27px;
 }
-.student-row {
+.students {
     display: flex;
     justify-content: space-around;
-    gap: 6px;
-    margin: 12px 0;
+    gap: 5px;
+    margin: 10px 0;
 }
 .student {
     background: #ffda9a;
     border: 3px solid #87502d;
-    padding: 8px 3px;
+    padding: 10px 2px;
     flex: 1;
     font-size: 24px;
-    box-shadow: 0 4px 0 #89552f;
-}
-.student-name {
-    color: #183153;
-    font-size: 12px;
-    font-weight: 900;
 }
 .desk {
     background: #bc753c;
     border: 3px solid #77431f;
-    color: white;
     padding: 8px;
-    margin: 5px 0;
-    box-shadow: 0 4px 0 #77431f;
-}
-.pixel-button {
-    background: #153967;
-    border: 2px solid #539cff;
-    padding: 10px;
-    border-radius: 5px;
     color: white;
-    text-align: center;
-    font-weight: bold;
+    margin: 5px;
 }
-.event-box {
-    background: #e7f0ff;
-    color: #17355e;
-    border: 3px solid #5a9df2;
-    border-radius: 6px;
-    padding: 12px;
+.warning {
+    background: #ffbaba;
+    color: #820000;
+    border: 3px solid #a40000;
+    padding: 10px;
     font-weight: bold;
-}
-.small-text {
-    color: #c7dcff;
-    font-size: 13px;
 }
 div.stButton > button {
     width: 100%;
-    min-height: 48px;
-    border: 2px solid #5799ef;
-    border-radius: 5px;
+    min-height: 45px;
     background: #173967;
     color: white;
+    border: 2px solid #5799ef;
+    border-radius: 5px;
     font-weight: bold;
-    box-shadow: 0 3px 0 #061025;
 }
 div.stButton > button:hover {
     background: #285a9d;
-    border-color: #a4d4ff;
     color: white;
 }
 div[data-testid="stMetric"] {
     background: #10294d;
     border: 2px solid #397bd2;
-    padding: 10px;
-    border-radius: 6px;
-}
-div[data-testid="stMetricLabel"],
-div[data-testid="stMetricValue"] {
-    color: #eef5ff;
-}
-.stProgress > div > div > div > div {
-    background-color: #48d597;
+    padding: 8px;
+    border-radius: 5px;
 }
 </style>
+
+
 """, unsafe_allow_html=True)
-
-# ==========================================
-# 3. TAO GAME MOI
-# ==========================================
+==========================================
+4. TAO GAME MOI
+==========================================
 def new_game(level):
-    settings = {
-        "Dễ": {"target": 50, "turns": 15, "risk": 10},
-        "Trung bình": {"target": 70, "turns": 12, "risk": 20},
-        "Khó": {"target": 90, "turns": 10, "risk": 35}
-    }
-    config = settings[level]
+settings = {
+"Dễ": {"target": 50, "turns": 15, "risk": 10},
+"Trung bình": {"target": 70, "turns": 12, "risk": 20},
+"Khó": {"target": 90, "turns": 10, "risk": 35}
+}
+config = settings[level]
 
-    st.session_state.level = level
+st.session_state.level = level
     st.session_state.score = 0
     st.session_state.suspicion = 0
     st.session_state.energy = 100
@@ -183,104 +194,75 @@ def new_game(level):
     st.session_state.turn = 1
     st.session_state.status = "playing"
     st.session_state.last_action = "Chưa thực hiện"
-    st.session_state.last_event = "Chuông báo giờ kiểm tra đã vang lên!"
+    st.session_state.last_event = "Chuông báo giờ thi đã vang lên!"
     st.session_state.teacher_alert = False
-    st.session_state.log = [
-        "🔔 Bắt đầu ván chơi!"
-    ]
-
+    st.session_state.log = ["🔔 Bắt đầu ván chơi!"]
 
 if "status" not in st.session_state:
     new_game("Dễ")
-
-# Dam bao cac bien ton tai
-defaults = {
-    "level": "Dễ",
-    "score": 0,
-    "suspicion": 0,
-    "energy": 100,
-    "target": 50,
-    "max_turns": 15,
-    "risk": 10,
-    "turn": 1,
-    "status": "playing",
-    "last_action": "Chưa thực hiện",
-    "last_event": "",
-    "teacher_alert": False,
-    "log": []
-}
-
-for key, value in defaults.items():
-    if key not in st.session_state:
-        st.session_state[key] = value
-
-# ==========================================
-# 4. LOGIC HANH DONG
-# ==========================================
+==========================================
+5. XU LY HANH DONG
+==========================================
 def do_action(action):
-    if st.session_state.status != "playing":
-        return
+if st.session_state.status != "playing":
+return
 
-    score = st.session_state.score
+score = st.session_state.score
     suspicion = st.session_state.suspicion
     energy = st.session_state.energy
     risk = st.session_state.risk
-
     event = ""
     alert = False
 
-    if action == "Tập trung làm bài":
+if action == "Làm bài":
         gain = random.randint(8, 15)
         score += gain
         energy -= random.randint(4, 9)
         suspicion = max(0, suspicion - 2)
-        event = f"📚 Bạn tập trung làm bài và tăng {gain} điểm."
+        event = f"📚 Bạn tập trung làm bài, tăng {gain} điểm."
 
-    elif action == "Quan sát giáo viên":
+elif action == "Quan sát":
         energy -= 2
         suspicion = max(0, suspicion - random.randint(1, 5))
-        event = "👀 Bạn quan sát tình hình trong lớp."
+        event = "👀 Bạn quan sát giáo viên."
 
-    elif action == "Nghỉ ngơi":
+elif action == "Nghỉ ngơi":
         recovery = random.randint(10, 20)
         energy = min(100, energy + recovery)
-        event = f"☕ Bạn nghỉ ngơi và hồi phục {recovery} thể lực."
+        event = f"☕ Bạn hồi phục {recovery} thể lực."
 
-    elif action == "Xem tài liệu":
+elif action == "Tài liệu":
         gain = random.randint(10, 20)
         score += gain
         suspicion += random.randint(5, risk)
         energy -= 4
-        event = f"📖 Bạn tăng {gain} điểm nhưng mức nghi ngờ tăng."
+        event = f"📖 Bạn tăng {gain} điểm, nhưng nghi ngờ tăng."
 
-    elif action == "Trao đổi với bạn":
+elif action == "Trao đổi":
         energy -= 5
         if random.random() < 0.6:
             gain = random.randint(8, 16)
             score += gain
-            event = f"🤝 Bạn nhận được gợi ý và tăng {gain} điểm."
+            event = f"🤝 Bạn nhận gợi ý, tăng {gain} điểm."
         else:
             suspicion += random.randint(10, risk + 5)
             event = "😰 Cuộc trao đổi khiến bạn bị chú ý."
 
-    score = max(0, score)
-    suspicion = min(100, max(0, suspicion))
-    energy = min(100, max(0, energy))
+score = max(0, score)
+    suspicion = max(0, min(100, suspicion))
+    energy = max(0, min(100, energy))
 
-    # Kiem tra muc nghi ngo
-    if suspicion >= 100:
-        alert = True
+if suspicion >= 100:
         status = "lost"
-        event += " 🚨 Giáo viên phát hiện bạn!"
-    elif suspicion >= 70 and random.random() < 0.5:
         alert = True
-        event += " 👀 Giáo viên đang chú ý đến bạn!"
-        status = "playing"
+        event += " 🚨 Giáo viên phát hiện bạn!"
     else:
         status = "playing"
+        if suspicion >= 70 and random.random() < 0.5:
+            alert = True
+            event += " 👀 Giáo viên đang chú ý!"
 
-    # Cap nhat trang thai
-    st.session_state.score = score
+st.session_state.score = score
     st.session_state.suspicion = suspicion
     st.session_state.energy = energy
     st.session_state.last_action = action
@@ -288,122 +270,93 @@ def do_action(action):
     st.session_state.teacher_alert = alert
     st.session_state.status = status
 
-    # Kiem tra thang/thua
-    if st.session_state.status == "playing":
+if st.session_state.status == "playing":
         if score >= st.session_state.target:
             st.session_state.status = "won"
-            st.session_state.last_event += " 🏆 Đạt mục tiêu!"
+            st.session_state.last_event += " 🏆 Bạn chiến thắng!"
         elif energy <= 0:
             st.session_state.status = "lost"
-            st.session_state.last_event += " 😵 Bạn đã hết thể lực!"
+            st.session_state.last_event += " 😵 Bạn hết thể lực!"
         elif st.session_state.turn >= st.session_state.max_turns:
             st.session_state.status = "lost"
-            st.session_state.last_event += " ⏰ Đã hết lượt chơi!"
+            st.session_state.last_event += " ⏰ Hết lượt chơi!"
 
-    st.session_state.log.append(
+st.session_state.log.append(
         f"Lượt {st.session_state.turn}: {st.session_state.last_event}"
     )
 
-    # Chi tang luot neu van tiep tuc
-    if st.session_state.status == "playing":
+if st.session_state.status == "playing":
         st.session_state.turn += 1
-
-# ==========================================
-# 5. TIEU DE GAME
-# ==========================================
+==========================================
+6. TIEU DE VA DO KHO
+==========================================
 st.markdown(
-    '<div class="pixel-title">📝 ĐẠI CHIẾN PHÒNG THI<br>'
-    '<span style="font-size:15px;">'
-    'GAME 2D PIXEL ART • QUẢN LÝ ĐIỂM SỐ • THỂ LỰC • NGHI NGỜ'
-    '</span></div>',
-    unsafe_allow_html=True
+'<div class="pixel-title">📝 ĐẠI CHIẾN PHÒNG THI<br>'
+'<span style="font-size:15px;">'
+'2D PIXEL ART • ĐIỂM SỐ • THỂ LỰC • NGHI NGỜ'
+'</span></div>',
+unsafe_allow_html=True
 )
 
 st.write("")
+levels = ["Dễ", "Trung bình", "Khó"]
+current_level = st.session_state.level
+if current_level not in levels:
+    current_level = "Dễ"
 
-# ==========================================
-# 6. CHON DO KHO
-# ==========================================
-top1, top2, top3 = st.columns([2, 2, 1])
-
-with top1:
-    levels = ["Dễ", "Trung bình", "Khó"]
-    current = st.session_state.level
-    if current not in levels:
-        current = "Dễ"
-
+c1, c2 = st.columns([2, 1])
+with c1:
     selected_level = st.selectbox(
-        "🎯 Độ khó",
+        "🎯 Chọn độ khó",
         levels,
-        index=levels.index(current)
+        index=levels.index(current_level)
     )
-
-with top2:
-    st.markdown(
-        f"**🏆 Mục tiêu:** {st.session_state.target} điểm"
-    )
-    st.markdown(
-        f"**🎮 Lượt:** {st.session_state.turn}/{st.session_state.max_turns}"
-    )
-
-with top3:
+with c2:
+    st.write("")
     if st.button("🔄 Chơi mới", use_container_width=True):
         new_game(selected_level)
         st.rerun()
-
-if selected_level != st.session_state.level:
-    st.info("Bạn đã chọn độ khó khác. Nhấn **Chơi mới** để áp dụng.")
-
-# ==========================================
-# 7. KHUNG GAME VA BANG DIEU KHIEN
-# ==========================================
-left, right = st.columns([2.2, 1], gap="medium")
+==========================================
+7. BAN DO LOP HOC
+==========================================
+left, right = st.columns([2.2, 1])
 
 with left:
     st.markdown('<div class="game-panel">', unsafe_allow_html=True)
-    st.markdown("### 🏫 Phòng thi 2D")
-
+    st.markdown("### 🏫 Phòng thi Pixel Art")
     st.markdown('<div class="room">', unsafe_allow_html=True)
 
-    st.markdown(
-        '<div class="blackboard">'
-        'KỲ THI<br>'
+st.markdown(
+        '<div class="blackboard">KỲ THI<br>'
         '<span style="font-size:13px;">'
         'TỰ TIN • BÌNH TĨNH • LÀM BÀI TỐT'
         '</span></div>',
         unsafe_allow_html=True
     )
 
-    st.markdown(
-        '<div class="teacher-area">'
-        '<div style="font-size:32px;">👩‍🏫</div>'
-        '<b style="color:#183153;">GIÁO VIÊN</b><br>'
-        '<span style="color:#183153;font-size:12px;">'
-        'Đang giám sát phòng thi'
-        '</span></div>',
+st.markdown(
+        '<div class="teacher">👩‍🏫<br>'
+        '<span style="font-size:14px;color:#183153;">GIÁO VIÊN</span></div>',
         unsafe_allow_html=True
     )
 
-    if st.session_state.teacher_alert:
+if st.session_state.teacher_alert:
         st.markdown(
-            '<div style="background:#ffbaba;color:#820000;'
-            'border:3px solid #a40000;padding:8px;font-weight:bold;">'
-            '🚨 GIÁO VIÊN ĐANG CHÚ Ý ĐẾN BẠN!'
-            '</div>',
+            '<div class="warning">🚨 GIÁO VIÊN ĐANG CHÚ Ý!</div>',
             unsafe_allow_html=True
         )
 
-    st.markdown(
-        '<div class="student-row">'
-        '<div class="student">🧑‍🎓<div class="student-name">BẠN A</div></div>'
-        '<div class="student">👩‍🎓<div class="student-name">BẠN B</div></div>'
-        '<div class="student">👨‍🎓<div class="student-name">BẠN C</div></div>'
+st.markdown(
+        '<div class="students">'
+        '<div class="student">🧑‍🎓<br><small>BẠN A</small></div>'
+        '<div class="student">👩‍🎓<br><small>BẠN B</small></div>'
+        '<div class="student">👨‍🎓<br><small>BẠN C</small></div>'
         '</div>',
         unsafe_allow_html=True
     )
 
-    st.markdown(
-        '<div class="student-row">'
+st.markdown(
+        '<div class="students">'
         '<div class="desk">🪑<br>📄 Bài thi</div>'
         '<div class="desk">🪑<br>✏️ Bút</div>'
         '<div class="desk">🪑<br>📄 Bài thi</div>'
@@ -411,122 +364,118 @@ with left:
         unsafe_allow_html=True
     )
 
-    st.markdown(
-        '<div class="student-row">'
-        '<div class="student">🧑‍🎓<div class="student-name">HỌC SINH</div></div>'
-        '<div class="student">🧑‍🎓<div class="student-name">BẠN</div></div>'
-        '<div class="student">🧑‍🎓<div class="student-name">HỌC SINH</div></div>'
+st.markdown(
+        '<div class="students">'
+        '<div class="student">🧑‍🎓<br><small>HỌC SINH</small></div>'
+        '<div class="student">🧑‍🎓<br><small>🟡 BẠN</small></div>'
+        '<div class="student">🧑‍🎓<br><small>HỌC SINH</small></div>'
         '</div>',
         unsafe_allow_html=True
     )
 
-    st.markdown(
-        '<div style="background:#b66d3b;color:white;padding:8px;'
-        'border:3px solid #77431f;">'
-        '🪟 CỬA SỔ　　　🪴 CÂY XANH　　　🚪 CỬA RA VÀO'
-        '</div>',
+st.markdown(
+        '<div class="desk">🪟 CỬA SỔ　 🪴 CÂY XANH　 🚪 CỬA RA VÀO</div>',
         unsafe_allow_html=True
     )
-
     st.markdown('</div>', unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
+Bang chi so
+st.markdown('<div class="game-panel">', unsafe_allow_html=True)
+st.markdown("### 📊 Chỉ số người chơi")
+a, b, c = st.columns(3)
+a.metric("⭐ Điểm", st.session_state.score)
+b.metric("👀 Nghi ngờ", f"{st.session_state.suspicion}/100")
+c.metric("⚡ Thể lực", f"{st.session_state.energy}/100")
 
-    # Chi so nhan vat
-    st.markdown('<div class="game-panel">', unsafe_allow_html=True)
-    st.markdown("### 🎮 Chỉ số người chơi")
-
-    a, b, c = st.columns(3)
-    with a:
-        st.metric("⭐ Điểm", st.session_state.score)
-    with b:
-        st.metric("👀 Nghi ngờ", f"{st.session_state.suspicion}/100")
-    with c:
-        st.metric("⚡ Thể lực", f"{st.session_state.energy}/100")
-
-    st.markdown("**Tiến độ điểm số**")
-    st.progress(
-        min(st.session_state.score / max(st.session_state.target, 1), 1.0)
-    )
-
-    st.markdown("**Mức nghi ngờ**")
+st.caption("Tiến độ mục tiêu")
+    st.progress(min(st.session_state.score / st.session_state.target, 1.0))
+    st.caption("Mức nghi ngờ")
     st.progress(st.session_state.suspicion / 100)
-
-    st.markdown("**Thể lực**")
+    st.caption("Thể lực")
     st.progress(st.session_state.energy / 100)
-
     st.markdown('</div>', unsafe_allow_html=True)
 
 with right:
     st.markdown('<div class="game-panel">', unsafe_allow_html=True)
-    st.markdown("### 🕹️ Hành động")
+    st.markdown("### 🎮 Hành động")
 
-    if st.session_state.status == "playing":
+if st.session_state.status == "playing":
         if st.button("📚 Tập trung làm bài", use_container_width=True):
-            do_action("Tập trung làm bài")
+            do_action("Làm bài")
             st.rerun()
 
-        if st.button("👀 Quan sát giáo viên", use_container_width=True):
-            do_action("Quan sát giáo viên")
+if st.button("👀 Quan sát giáo viên", use_container_width=True):
+            do_action("Quan sát")
             st.rerun()
 
-        if st.button("☕ Nghỉ ngơi", use_container_width=True):
+if st.button("☕ Nghỉ ngơi", use_container_width=True):
             do_action("Nghỉ ngơi")
             st.rerun()
 
-        if st.button("📖 Xem tài liệu", use_container_width=True):
-            do_action("Xem tài liệu")
+if st.button("📖 Xem tài liệu", use_container_width=True):
+            do_action("Tài liệu")
             st.rerun()
 
-        if st.button("🤝 Trao đổi với bạn", use_container_width=True):
-            do_action("Trao đổi với bạn")
+if st.button("🤝 Trao đổi với bạn", use_container_width=True):
+            do_action("Trao đổi")
             st.rerun()
     else:
         if st.session_state.status == "won":
             st.success("🏆 CHIẾN THẮNG!")
-            st.write("Bạn đã đạt mục tiêu điểm số.")
         else:
-            st.error("❌ GAME OVER")
-            st.write("Bạn chưa hoàn thành mục tiêu.")
+            st.error("❌ GAME OVER!")
 
-        if st.button("🎮 Chơi lại", use_container_width=True):
+if st.button("🎮 Chơi lại", use_container_width=True):
             new_game(selected_level)
             st.rerun()
 
     st.markdown('</div>', unsafe_allow_html=True)
 
-    st.markdown('<div class="game-panel">', unsafe_allow_html=True)
+st.markdown('<div class="game-panel">', unsafe_allow_html=True)
     st.markdown("### 📜 Nhật ký")
-
     for entry in reversed(st.session_state.log[-7:]):
-        st.markdown(
-            f'<div class="small-text" '
-            f'style="border-bottom:1px solid #345477;padding:7px 0;">'
-            f'• {entry}</div>',
-            unsafe_allow_html=True
-        )
-
+        st.write("• " + entry)
     st.markdown('</div>', unsafe_allow_html=True)
 
-    st.markdown('<div class="game-panel">', unsafe_allow_html=True)
+st.markdown('<div class="game-panel">', unsafe_allow_html=True)
     st.markdown("### 💬 Sự kiện gần nhất")
-    st.markdown(
-        f'<div class="event-box">{st.session_state.last_event}</div>',
-        unsafe_allow_html=True
-    )
+    st.info(st.session_state.last_event)
     st.markdown('</div>', unsafe_allow_html=True)
+==========================================
+8. KHU VUC AM THANH
+==========================================
+st.markdown("---")
+st.markdown("## 🔊 Trung tâm âm thanh")
+st.write(
+"Bấm nút phát âm thanh bên dưới. "
+"Trình duyệt có thể yêu cầu tương tác trực tiếp trước khi phát."
+)
 
-# ==========================================
-# 8. HUONG DAN
-# ==========================================
+s1, s2, s3 = st.columns(3)
+
+with s1:
+st.markdown("🔔 Chuông báo")
+sound_effect("bell")
+
+with s2:
+st.markdown("🖱️ Tiếng bấm")
+sound_effect("click")
+
+with s3:
+st.markdown("🏆 Âm thanh chiến thắng")
+sound_effect("win")
+==========================================
+9. HUONG DAN
+==========================================
 with st.expander("❓ Hướng dẫn chơi"):
-    st.markdown("""
-    - **Tập trung làm bài:** Tăng điểm, tiêu hao thể lực.
-    - **Quan sát giáo viên:** Giảm nhẹ mức nghi ngờ.
-    - **Nghỉ ngơi:** Hồi phục thể lực.
-    - **Xem tài liệu:** Có thể tăng điểm nhưng tăng nghi ngờ.
-    - **Trao đổi với bạn:** Có cơ hội tăng điểm nhưng có rủi ro.
+st.markdown("""
+- 📚 Tập trung làm bài: Tăng điểm, tiêu hao thể lực.
+- 👀 Quan sát giáo viên: Giảm nhẹ mức nghi ngờ.
+- ☕ Nghỉ ngơi: Hồi phục thể lực.
+- 📖 Xem tài liệu: Có thể tăng điểm nhưng tăng nghi ngờ.
+- 🤝 Trao đổi với bạn: Có cơ hội tăng điểm nhưng cũng có rủi ro.
 
-    **Chiến thắng:** Đạt đủ điểm mục tiêu trước khi hết lượt.
+Chiến thắng: Đạt mục tiêu điểm số.
 
-    **Thất bại:** Mức nghi ngờ đạt 100, hết thể lực hoặc hết lượt chơi.
-    """)
+Thất bại: Bị phát hiện, hết thể lực hoặc hết lượt chơi.
+""")
