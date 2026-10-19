@@ -476,6 +476,4 @@ with st.expander("❓ Hướng dẫn chơi"):
 
     **Điều kiện chiến thắng:** Đạt mục tiêu điểm số.
 
-    **Điều kiện thất bại:** Bị phát hiện, hết thể lực hoặc hết lượt mà chưa đạt mục tiêu.
-    """)
-```
+    **Điều kiện thất bại:** Bị phát hiện, hết thể lực hoặc hết lượt mà chưa đạt mục tiêu
