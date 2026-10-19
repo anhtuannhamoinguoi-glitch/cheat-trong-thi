@@ -3,7 +3,7 @@ import random
 import streamlit as st
 
 st.set_page_config(
-    page_title="Đại chiến phòng thi",
+    page_title="Gian-lận-trong-thi",
     page_icon="📝",
     layout="centered"
 )
