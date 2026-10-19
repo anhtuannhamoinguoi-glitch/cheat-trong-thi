@@ -1,678 +1,481 @@
-
+```python
 import random
-import html
 import streamlit as st
 
+# ==========================================
+# 1. CẤU HÌNH TRANG
+# ==========================================
 st.set_page_config(
-    page_title="Gian lận trong thi - Pixel Classroom",
+    page_title="Đại chiến phòng thi",
     page_icon="📝",
-    layout="wide",
+    layout="centered"
 )
 
-# =====================================================
-# 1. GIAO DIỆN PIXEL ART VÀ HIỆU ỨNG
-# =====================================================
-
+# ==========================================
+# 2. GIAO DIỆN
+# ==========================================
 st.markdown("""
 <style>
 .stApp {
-    background: #101827;
-    color: #f4f7ff;
+    background-color: #eef5ff;
 }
-h1, h2, h3, p, label {
-    color: #f4f7ff;
-}
-.block-container {
-    padding-top: 1.5rem;
-    padding-bottom: 2rem;
-}
-div.stButton > button {
-    min-height: 58px;
-    border: 2px solid #5c96ed;
-    border-radius: 7px;
-    background: #203b60;
-    color: white;
-    font-weight: bold;
-    transition: transform .15s, background .15s;
-}
-div.stButton > button:hover {
-    transform: translateY(-3px);
-    background: #315786;
-    border-color: #ffda66;
-    color: #ffda66;
-}
-.pixel-panel {
-    background: #172b45;
-    border: 3px solid #4d8bdf;
-    border-radius: 8px;
-    padding: 12px;
-    margin-bottom: 12px;
-    box-shadow: 4px 4px 0 #091321;
-}
-.action-effect {
-    animation: pixel-pop .35s ease-out,
-               pixel-flash .7s ease-in-out 1;
-    border: 3px solid #ffd166;
-    border-radius: 8px;
-    padding: 12px;
-    margin: 12px 0;
-    background: #243d60;
+.main-title {
     text-align: center;
-    box-shadow: 4px 4px 0 #091321;
+    color: #183153;
+    font-size: 34px;
+    font-weight: bold;
 }
-.action-effect .big-icon {
-    font-size: 42px;
-    line-height: 1.3;
-    animation: pixel-float .4s ease-out;
+.subtitle {
+    text-align: center;
+    color: #53657d;
+    margin-bottom: 20px;
 }
-.action-effect p {
-    margin-bottom: 0;
+.classroom {
+    background: #d9efff;
+    border: 4px solid #34495e;
+    border-radius: 15px;
+    padding: 16px;
+    text-align: center;
+    color: #243447;
 }
-.action-alert {
-    border-color: #ff5b6e;
-    background: #602839;
+.blackboard {
+    background: #245c48;
+    color: white;
+    border: 6px solid #8b5a2b;
+    border-radius: 5px;
+    padding: 15px;
+    margin: 5px auto 20px auto;
+    font-size: 21px;
+    font-weight: bold;
 }
-.action-success {
-    border-color: #55e6a5;
-    background: #174b43;
+.teacher {
+    display: inline-block;
+    background: #f8d7da;
+    border: 3px solid #842029;
+    border-radius: 10px;
+    padding: 12px 20px;
+    margin: 8px;
+    font-size: 25px;
 }
-@keyframes pixel-pop {
-    0% { transform: scale(.85); opacity: .2; }
-    70% { transform: scale(1.04); opacity: 1; }
-    100% { transform: scale(1); opacity: 1; }
-}
-@keyframes pixel-flash {
-    0%, 100% { filter: brightness(1); }
-    50% { filter: brightness(1.5); }
-}
-@keyframes pixel-float {
-    from { transform: translateY(12px); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
-}
-@keyframes teacher-move {
-    0% { transform: translateX(-5px); }
-    50% { transform: translateX(5px); }
-    100% { transform: translateX(-5px); }
-}
-.teacher-sprite {
-    animation: teacher-move 1.5s steps(4, end) infinite;
-    transform-box: fill-box;
-    transform-origin: center;
-}
-.player-sprite {
-    animation: pixel-pop .25s steps(3, end);
-}
-.scene-caption {
-    padding: 10px 12px;
-    border-left: 4px solid #ffd166;
-    background: #172b45;
-    margin-top: 8px;
-    border-radius: 4px;
-}
-div[data-testid="stMetric"] {
-    background: #172b45;
-    border: 1px solid #315786;
+.student {
+    display: inline-block;
+    background: #fff3cd;
+    border: 3px solid #34495e;
     border-radius: 8px;
     padding: 10px;
+    margin: 5px;
+    min-width: 75px;
+    font-size: 23px;
+}
+.desk {
+    display: inline-block;
+    background: #c58b52;
+    border: 3px solid #80552d;
+    border-radius: 5px;
+    padding: 10px;
+    margin: 5px;
+    font-size: 20px;
+}
+.alert-box {
+    background: #ffe0e0;
+    color: #8b0000;
+    border: 2px solid #cc0000;
+    border-radius: 8px;
+    padding: 10px;
+    font-weight: bold;
+    margin: 10px 0;
+}
+.safe-box {
+    background: #d8f3dc;
+    color: #1b4332;
+    border: 2px solid #40916c;
+    border-radius: 8px;
+    padding: 10px;
+    margin: 10px 0;
 }
 </style>
 """, unsafe_allow_html=True)
 
-st.title("📝 GIAN LẬN TRONG THI")
-st.caption("PIXEL CLASSROOM • 2D TOP-DOWN • Mô phỏng phòng thi")
-
-
-# =====================================================
-# 2. CẤU HÌNH GAME
-# =====================================================
-
-LEVELS = {
-    "Dễ": {
-        "suspicion": 5,
-        "energy": 100,
-        "target": 50,
-        "risk": 0.10,
-    },
-    "Trung bình": {
-        "suspicion": 15,
-        "energy": 90,
-        "target": 70,
-        "risk": 0.25,
-    },
-    "Khó": {
-        "suspicion": 25,
-        "energy": 80,
-        "target": 90,
-        "risk": 0.40,
-    },
-}
-
-SCENES = [
-    "Giám thị đang đi quanh lớp.",
-    "Cả phòng thi im lặng, đồng hồ tích tắc.",
-    "Giám thị dừng lại gần một dãy bàn.",
-    "Một bạn học sinh đang loay hoay với đề thi.",
-    "Tiếng bước chân vang lên ở cuối lớp.",
-    "Bạn cần bình tĩnh hoàn thành bài thi.",
-]
-
-ACTIONS = {
-    "📖 Tự làm bài nghiêm túc": {
-        "icon": "✍️",
-        "pose": "write",
-        "title": "Bạn tập trung làm bài!",
-        "description": "Bút chạy trên giấy thi. Bạn đang cố gắng làm bài.",
-    },
-    "🧠 Bình tĩnh suy nghĩ": {
-        "icon": "💭",
-        "pose": "think",
-        "title": "Bạn đang suy nghĩ!",
-        "description": "Một bong bóng suy nghĩ xuất hiện trên đầu bạn.",
-    },
-    "👀 Lén xem tài liệu": {
-        "icon": "⚠️",
-        "pose": "sneak",
-        "title": "Bạn lén xem tài liệu!",
-        "description": "Bạn hành động lén lút. Giám thị có thể chú ý.",
-    },
-    "☕ Nghỉ ngơi lấy sức": {
-        "icon": "⚡",
-        "pose": "rest",
-        "title": "Bạn đang nghỉ ngơi!",
-        "description": "Bạn thư giãn và hồi phục thể lực.",
-    },
-}
-
-
+# ==========================================
+# 3. KHỞI TẠO TRẠNG THÁI GAME
+# ==========================================
 def new_game(level):
-    settings = LEVELS[level]
+    settings = {
+        "Dễ": {
+            "target": 50,
+            "risk": 15,
+            "max_turns": 15
+        },
+        "Trung bình": {
+            "target": 70,
+            "risk": 25,
+            "max_turns": 12
+        },
+        "Khó": {
+            "target": 90,
+            "risk": 40,
+            "max_turns": 10
+        }
+    }
+
+    config = settings[level]
+
     st.session_state.level = level
     st.session_state.score = 0
-    st.session_state.suspicion = settings["suspicion"]
-    st.session_state.energy = settings["energy"]
-    st.session_state.target = settings["target"]
-    st.session_state.risk = settings["risk"]
+    st.session_state.suspicion = 0
+    st.session_state.energy = 100
+    st.session_state.target = config["target"]
+    st.session_state.risk = config["risk"]
     st.session_state.turn = 1
-    st.session_state.max_turns = 8
+    st.session_state.max_turns = config["max_turns"]
     st.session_state.status = "playing"
-    st.session_state.scene = "Tiếng trống vang lên! Kỳ thi bắt đầu."
-    st.session_state.log = ["🔔 Kỳ thi bắt đầu!"]
+    st.session_state.scene = "classroom"
+    st.session_state.log = [
+        "🔔 Tiếng chuông báo hiệu giờ kiểm tra bắt đầu!"
+    ]
     st.session_state.last_action = ""
-    st.session_state.last_event = ""
+    st.session_state.last_event = "Hãy hoàn thành mục tiêu của bạn!"
     st.session_state.last_icon = "🔔"
     st.session_state.teacher_alert = False
 
 
+# Tự khởi tạo nếu chưa có dữ liệu game
 if "status" not in st.session_state:
     new_game("Dễ")
 
+# Bổ sung giá trị mặc định để tránh thiếu khóa session_state
+defaults = {
+    "level": "Dễ",
+    "score": 0,
+    "suspicion": 0,
+    "energy": 100,
+    "target": 50,
+    "risk": 15,
+    "turn": 1,
+    "max_turns": 15,
+    "status": "playing",
+    "scene": "classroom",
+    "log": [],
+    "last_action": "",
+    "last_event": "",
+    "last_icon": "🔔",
+    "teacher_alert": False
+}
 
-# =====================================================
-# 3. VẼ NHÂN VẬT PIXEL ART BẰNG SVG
-# =====================================================
+for key, value in defaults.items():
+    if key not in st.session_state:
+        st.session_state[key] = value
 
-def draw_classroom():
-    """Tạo cảnh lớp học và nhân vật theo trạng thái hiện tại."""
+# ==========================================
+# 4. XỬ LÝ HÀNH ĐỘNG
+# ==========================================
+def do_action(action):
+    if st.session_state.status != "playing":
+        return
 
-    turn = st.session_state.turn
-    action = st.session_state.last_action
-    status = st.session_state.status
-    alert = st.session_state.teacher_alert
-
-    # Giám thị đổi vị trí qua từng lượt.
-    teacher_positions = [100, 230, 360, 500, 570, 440, 300, 150]
-    teacher_x = teacher_positions[(turn - 1) % len(teacher_positions)]
-
-    # Vị trí cố định của người chơi.
-    px, py = 300, 245
-
-    # Tư thế mặc định.
-    pose = "idle"
-    if action in ACTIONS:
-        pose = ACTIONS[action]["pose"]
-
-    # Tư thế đầu và thân.
-    head_y = py - 16 if pose == "write" else py - 21
-    body_y = py - 2
-
-    if pose == "rest":
-        head_y = py - 12
-        body_y = py + 1
-
-    shirt = "#ffbd4a" if pose == "sneak" else "#4789d8"
-    if status == "caught":
-        shirt = "#d94b5b"
-
-    # Biểu tượng nổi trên nhân vật.
-    bubble = ""
-    if pose == "write":
-        bubble = f"""
-        <g class="player-sprite">
-          <rect x="{px+18}" y="{py-57}" width="42" height="28"
-                rx="3" fill="#fff0c5" stroke="#493021" stroke-width="3"/>
-          <path d="M{px+25} {py-48}h25 M{px+25} {py-41}h17"
-                stroke="#7b6a57" stroke-width="2"/>
-          <path d="M{px+14} {py-19}l13 8"
-                stroke="#ffe8a3" stroke-width="4"/>
-        </g>
-        """
-    elif pose == "think":
-        bubble = f"""
-        <g class="player-sprite">
-          <rect x="{px+20}" y="{py-65}" width="42" height="27"
-                rx="8" fill="#e6f5ff" stroke="#315786" stroke-width="3"/>
-          <circle cx="{px+25}" cy="{py-33}" r="5" fill="#e6f5ff"/>
-          <text x="{px+41}" y="{py-47}" text-anchor="middle"
-                font-size="17">?</text>
-        </g>
-        """
-    elif pose == "sneak":
-        bubble = f"""
-        <g class="player-sprite">
-          <path d="M{px+15} {py-62}l12 -12l12 12z"
-                fill="#ffdf57" stroke="#8a382f" stroke-width="3"/>
-          <text x="{px+27}" y="{py-62}" text-anchor="middle"
-                font-size="13" font-weight="bold" fill="#8a382f">!</text>
-          <rect x="{px-25}" y="{py-3}" width="24" height="18"
-                fill="#fff0c5" stroke="#493021" stroke-width="2"/>
-        </g>
-        """
-    elif pose == "rest":
-        bubble = f"""
-        <g class="player-sprite">
-          <text x="{px+24}" y="{py-48}" font-size="18">Z</text>
-          <text x="{px+39}" y="{py-61}" font-size="13">z</text>
-        </g>
-        """
-
-    teacher_bubble = ""
-    if alert or status == "caught":
-        teacher_bubble = f"""
-        <g>
-          <rect x="{teacher_x-12}" y="78" width="35" height="28"
-                rx="4" fill="#ff5964" stroke="#6c1e2b" stroke-width="3"/>
-          <text x="{teacher_x+5}" y="98" text-anchor="middle"
-                font-size="19" font-weight="bold" fill="white">!</text>
-        </g>
-        """
-
-    svg = [
-        '<div style="width:100%;overflow-x:auto;">',
-        """
-        <svg xmlns="http://www.w3.org/2000/svg"
-             viewBox="0 0 680 410"
-             style="width:100%;height:auto;display:block;
-                    image-rendering:pixelated;
-                    border:4px solid #4d8bdf;border-radius:6px;">
-          <defs>
-            <pattern id="floor" width="48" height="36"
-                     patternUnits="userSpaceOnUse">
-              <rect width="48" height="36" fill="#b99a76"/>
-              <path d="M0 0H48 M0 36H48 M24 0V18 M0 18H48"
-                    stroke="#8c7158" stroke-width="1"/>
-            </pattern>
-          </defs>
-          <rect width="680" height="410" fill="url(#floor)"/>
-          <rect x="0" y="0" width="680" height="57" fill="#674b3d"/>
-          <rect x="0" y="49" width="680" height="9" fill="#dfb88b"/>
-
-          <!-- Cửa sổ -->
-          <rect x="12" y="7" width="68" height="38"
-                fill="#8bd8f5" stroke="#f5d8a8" stroke-width="5"/>
-          <path d="M46 7V45 M12 26H80" stroke="#e7f3ff" stroke-width="4"/>
-
-          <!-- Bảng đen -->
-          <rect x="174" y="5" width="320" height="53"
-                fill="#5c3827" stroke="#d6a36d" stroke-width="4"/>
-          <rect x="182" y="12" width="304" height="39" fill="#185b45"/>
-          <path d="M200 23h58m-30 10h80m80-8h55m-190 12h90"
-                stroke="#c8e5bb" stroke-width="2" stroke-dasharray="12 5"/>
-
-          <!-- Cửa lớp -->
-          <rect x="604" y="5" width="62" height="50"
-                fill="#64432f" stroke="#e8c69c" stroke-width="4"/>
-          <rect x="612" y="11" width="46" height="38" fill="#a4d8f4"/>
-          <circle cx="650" cy="31" r="3" fill="#f9dc75"/>
-
-          <!-- Bàn giáo viên -->
-          <rect x="255" y="64" width="170" height="31"
-                fill="#86502d" stroke="#50301f" stroke-width="4"/>
-          <rect x="263" y="69" width="154" height="9" fill="#c58b4b"/>
-
-          <!-- Giáo viên -->
-          <g class="teacher-sprite">
-            <rect x="{tx}" y="72" width="25" height="22"
-                  fill="#e9b18b" stroke="#342b38" stroke-width="3"/>
-          </g>
-        """.replace("{tx}", str(teacher_x)),
-        f"""
-          <rect x="{teacher_x+4}" y="76" width="4" height="4" fill="#30263a"/>
-          <rect x="{teacher_x+15}" y="76" width="4" height="4" fill="#30263a"/>
-          <rect x="{teacher_x-2}" y="94" width="30" height="17"
-                fill="#315ba8" stroke="#342b38" stroke-width="3"/>
-          {teacher_bubble}
-        """,
-    ]
-
-    # Bàn học sinh thành lưới 4 cột x 3 hàng.
-    xs = [65, 210, 355, 500]
-    ys = [145, 220, 295]
-
-    for row, y in enumerate(ys):
-        for col, x in enumerate(xs):
-            is_player = row == 1 and col == 1
-
-            # Vẽ vùng nổi bật quanh bàn người chơi.
-            if is_player:
-                svg.append(f"""
-                <rect x="{x-10}" y="{y-32}" width="96" height="80"
-                      rx="4" fill="#ffe36e" opacity=".25"/>
-                <rect x="{x-10}" y="{y-32}" width="96" height="80"
-                      rx="4" fill="none" stroke="#ffdb4d" stroke-width="4"/>
-                """)
-
-                # Nhân vật người chơi.
-                svg.append(f"""
-                <g class="player-sprite">
-                  <rect x="{px+5}" y="{head_y}" width="22" height="19"
-                        fill="#f0b58b" stroke="#342b38" stroke-width="3"/>
-                  <rect x="{px+3}" y="{head_y-4}" width="26" height="8"
-                        fill="#382b30"/>
-                  <rect x="{px+9}" y="{head_y+6}" width="3" height="3"
-                        fill="#30263a"/>
-                  <rect x="{px+20}" y="{head_y+6}" width="3" height="3"
-                        fill="#30263a"/>
-                  <rect x="{px}" y="{body_y}" width="32" height="21"
-                        fill="{shirt}" stroke="#342b38" stroke-width="3"/>
-                  <rect x="{px+3}" y="{body_y+19}" width="9" height="8"
-                        fill="#292c42"/>
-                  <rect x="{px+19}" y="{body_y+19}" width="9" height="8"
-                        fill="#292c42"/>
-                </g>
-                {bubble}
-                <rect x="{x+8}" y="{y+31}" width="60" height="15"
-                      fill="#172b45" stroke="#ffdb4d" stroke-width="2"/>
-                <text x="{x+38}" y="{y+42}" text-anchor="middle"
-                      font-size="10" font-weight="bold" fill="#ffeb8a">BẠN</text>
-                """)
-            else:
-                hair = random.choice(["#382b30", "#222b3a", "#573a2b"])
-                shirt_other = random.choice(
-                    ["#477ecb", "#e16b52", "#399d7c", "#8058b5"]
-                )
-                svg.append(f"""
-                <rect x="{x+27}" y="{y-24}" width="20" height="19"
-                      fill="{hair}"/>
-                <rect x="{x+30}" y="{y-21}" width="14" height="14"
-                      fill="#f0b58b"/>
-                <rect x="{x+32}" y="{y-16}" width="3" height="3" fill="#30263a"/>
-                <rect x="{x+40}" y="{y-16}" width="3" height="3" fill="#30263a"/>
-                <rect x="{x+25}" y="{y-5}" width="24" height="19"
-                      fill="{shirt_other}" stroke="#49342b" stroke-width="2"/>
-                <rect x="{x+28}" y="{y+13}" width="7" height="8" fill="#33364a"/>
-                <rect x="{x+40}" y="{y+13}" width="7" height="8" fill="#33364a"/>
-                """)
-
-            # Bàn, chân bàn và giấy thi.
-            svg.append(f"""
-            <rect x="{x}" y="{y+2}" width="76" height="34"
-                  fill="#80502f" stroke="#493021" stroke-width="3"/>
-            <rect x="{x+4}" y="{y+5}" width="68" height="24" fill="#d8a36b"/>
-            <rect x="{x+25}" y="{y+9}" width="25" height="15"
-                  fill="#fff2ce" stroke="#7c624b" stroke-width="1"/>
-            <path d="M{x+29} {y+13}h16 M{x+29} {y+17}h12"
-                  stroke="#8b8172" stroke-width="1"/>
-            <rect x="{x+6}" y="{y+36}" width="5" height="8" fill="#493021"/>
-            <rect x="{x+65}" y="{y+36}" width="5" height="8" fill="#493021"/>
-            """)
-
-    # Hiệu ứng phủ toàn màn hình khi kết thúc.
-    if status == "caught":
-        svg.append("""
-        <rect x="0" y="0" width="680" height="410"
-              fill="#c51f3a" opacity=".25"/>
-        <rect x="165" y="155" width="350" height="65"
-              rx="5" fill="#6a182b" stroke="#ff5b6e" stroke-width="5"/>
-        <text x="340" y="196" text-anchor="middle"
-              font-size="25" font-weight="bold" fill="white">
-              BỊ PHÁT HIỆN!
-        </text>
-        """)
-    elif status == "finished" and st.session_state.score >= st.session_state.target:
-        svg.append("""
-        <rect x="175" y="155" width="330" height="65"
-              rx="5" fill="#174b43" stroke="#55e6a5" stroke-width="5"/>
-        <text x="340" y="196" text-anchor="middle"
-              font-size="25" font-weight="bold" fill="white">
-              CHIẾN THẮNG!
-        </text>
-        """)
-
-    svg.append("</svg></div>")
-    st.markdown("".join(svg), unsafe_allow_html=True)
-
-
-# =====================================================
-# 4. XỬ LÝ HÀNH ĐỘNG VÀ SỰ KIỆN
-# =====================================================
-
-def take_action(action):
+    score = st.session_state.score
+    suspicion = st.session_state.suspicion
+    energy = st.session_state.energy
     risk = st.session_state.risk
-    event = ""
-    icon = ACTIONS[action]["icon"]
 
     st.session_state.last_action = action
-    st.session_state.last_icon = icon
     st.session_state.teacher_alert = False
 
-    if action == "📖 Tự làm bài nghiêm túc":
-        points = random.randint(8, 15)
-        st.session_state.score += points
-        st.session_state.energy -= 12
-        event = f"✍️ Bạn tập trung làm bài và được +{points} điểm."
+    if action == "Tập trung làm bài":
+        gain = random.randint(8, 15)
+        score += gain
+        energy -= random.randint(5, 10)
+        suspicion = max(0, suspicion - random.randint(0, 3))
+        event = f"📚 Bạn tập trung làm bài và đạt thêm {gain} điểm."
+        icon = "📚"
 
-    elif action == "🧠 Bình tĩnh suy nghĩ":
-        points = random.randint(4, 10)
-        st.session_state.score += points
-        st.session_state.energy -= 6
-        st.session_state.suspicion -= 5
-        event = f"💭 Bạn suy nghĩ cẩn thận và được +{points} điểm."
+    elif action == "Quan sát giáo viên":
+        energy -= 3
+        suspicion = max(0, suspicion - random.randint(0, 5))
+        event = "👀 Bạn quan sát tình hình trong lớp."
+        icon = "👀"
 
-    elif action == "👀 Lén xem tài liệu":
-        points = random.randint(12, 23)
-        st.session_state.score += points
-        st.session_state.energy -= 8
-        increase = random.randint(12, 24)
-        st.session_state.suspicion += increase
-        event = (
-            f"⚠️ Bạn được +{points} điểm nhưng mức nghi ngờ "
-            f"tăng {increase}."
-        )
+    elif action == "Nghỉ ngơi":
+        energy = min(100, energy + random.randint(10, 20))
+        event = "☕ Bạn nghỉ ngơi và hồi phục thể lực."
+        icon = "☕"
 
-        if random.random() < risk + 0.15:
-            st.session_state.teacher_alert = True
-            event += " 🚨 Giám thị chú ý đến bạn!"
+    elif action == "Xem tài liệu":
+        gain = random.randint(10, 20)
+        score += gain
+        suspicion += random.randint(5, risk)
+        energy -= random.randint(3, 8)
+        event = f"📖 Bạn có thêm {gain} điểm nhưng mức nghi ngờ tăng."
+        icon = "📖"
 
-    elif action == "☕ Nghỉ ngơi lấy sức":
-        recovery = random.randint(15, 24)
-        st.session_state.energy += recovery
-        st.session_state.suspicion -= 3
-        event = f"⚡ Bạn nghỉ ngơi và hồi phục {recovery} thể lực."
+    elif action == "Trao đổi với bạn":
+        result = random.randint(1, 100)
 
-    # Sự kiện bất ngờ.
-    if random.random() < risk:
-        increase = random.randint(4, 10)
-        st.session_state.suspicion += increase
-        st.session_state.teacher_alert = True
-        event += f" 👁️ Sự kiện bất ngờ: nghi ngờ tăng {increase}!"
+        if result <= 60:
+            gain = random.randint(8, 18)
+            score += gain
+            event = f"🤝 Bạn nhận được gợi ý, tăng {gain} điểm."
+            icon = "🤝"
+        else:
+            suspicion += random.randint(10, risk + 5)
+            event = "😰 Cuộc trao đổi khiến bạn bị chú ý."
+            icon = "😰"
 
-    # Giới hạn chỉ số.
-    st.session_state.suspicion = max(
-        0, min(100, st.session_state.suspicion)
-    )
-    st.session_state.energy = max(
-        0, min(100, st.session_state.energy)
-    )
+        energy -= 5
 
-    st.session_state.last_event = event
-    st.session_state.log.insert(0, event)
-
-    # Điều kiện kết thúc.
-    if st.session_state.suspicion >= 100:
-        st.session_state.status = "caught"
-    elif st.session_state.energy <= 0:
-        st.session_state.status = "exhausted"
-    elif st.session_state.turn >= st.session_state.max_turns:
-        st.session_state.status = "finished"
     else:
-        st.session_state.turn += 1
-        st.session_state.scene = random.choice(SCENES)
+        event = "Bạn chưa thực hiện hành động nào."
+        icon = "🔔"
 
+    # Giáo viên có thể phát hiện khi mức nghi ngờ tăng cao
+    if suspicion >= 100:
+        suspicion = 100
+        st.session_state.status = "lost"
+        event += " Giáo viên phát hiện bạn! Trò chơi kết thúc."
+        st.session_state.teacher_alert = True
 
-# =====================================================
-# 5. THANH CÀI ĐẶT VÀ CHỈ SỐ
-# =====================================================
+    elif suspicion >= 70 and random.random() < 0.5:
+        st.session_state.teacher_alert = True
+        event += " Giáo viên đang chú ý đến bạn!"
 
-with st.sidebar:
-    st.header("⚙️ CÀI ĐẶT")
+    # Giới hạn các chỉ số
+    st.session_state.score = max(0, score)
+    st.session_state.suspicion = max(0, min(100, suspicion))
+    st.session_state.energy = max(0, min(100, energy))
+    st.session_state.last_event = event
+    st.session_state.last_icon = icon
 
-    selected_level = st.selectbox(
-        "Chọn độ khó cho ván mới",
-        ["Dễ", "Trung bình", "Khó"],
-        index=["Dễ", "Trung bình", "Khó"].index(
-            st.session_state.level
-        ),
+    # Ghi nhật ký
+    st.session_state.log.append(
+        f"Lượt {st.session_state.turn}: {event}"
     )
 
-    st.write("### 📜 Luật chơi")
-    st.write("- Một ván có tối đa 8 lượt.")
-    st.write("- Đạt mục tiêu điểm để thắng.")
-    st.write("- Nghi ngờ chạm 100: bị phát hiện.")
-    st.write("- Thể lực về 0: hết sức.")
-    st.write("- Mỗi hành động có thể tạo sự kiện bất ngờ.")
+    # Kết thúc lượt
+    if st.session_state.status == "playing":
+        if st.session_state.score >= st.session_state.target:
+            st.session_state.status = "won"
+            st.session_state.last_event += " 🏆 Bạn đã hoàn thành mục tiêu!"
 
-    if st.button("🔄 BẮT ĐẦU VÁN MỚI", use_container_width=True):
-        new_game(selected_level)
-        st.rerun()
+        elif st.session_state.energy <= 0:
+            st.session_state.status = "lost"
+            st.session_state.last_event += " 😵 Bạn đã hết thể lực!"
 
-m1, m2, m3, m4 = st.columns(4)
-m1.metric("📚 ĐIỂM SỐ", st.session_state.score)
-m2.metric("👀 NGHI NGỜ", f"{st.session_state.suspicion}/100")
-m3.metric("⚡ THỂ LỰC", f"{st.session_state.energy}/100")
-m4.metric("⏱️ LƯỢT", f"{min(st.session_state.turn, 8)}/8")
+        elif st.session_state.turn >= st.session_state.max_turns:
+            if st.session_state.score >= st.session_state.target:
+                st.session_state.status = "won"
+            else:
+                st.session_state.status = "lost"
+                st.session_state.last_event += " ⏰ Hết lượt chơi!"
 
-st.progress(st.session_state.suspicion / 100)
-st.caption(
-    f"Độ khó: {st.session_state.level} • "
-    f"Mục tiêu: {st.session_state.target} điểm"
-)
+        else:
+            st.session_state.turn += 1
 
+# ==========================================
+# 5. VẼ LỚP HỌC
+# ==========================================
+def draw_classroom():
+    turn = st.session_state.get("turn", 1)
+    action = st.session_state.get("last_action", "")
+    status = st.session_state.get("status", "playing")
+    alert = st.session_state.get("teacher_alert", False)
+    score = st.session_state.get("score", 0)
+    suspicion = st.session_state.get("suspicion", 0)
+    energy = st.session_state.get("energy", 100)
+    event = st.session_state.get("last_event", "")
+    icon = st.session_state.get("last_icon", "🔔")
 
-# =====================================================
-# 6. LỚP HỌC VÀ NHẬT KÝ
-# =====================================================
-
-left, right = st.columns([2.1, 1])
-
-with left:
-    st.subheader("🏫 LỚP HỌC 2D PIXEL ART")
-    draw_classroom()
-
-    if st.session_state.last_action:
-        action_info = ACTIONS[st.session_state.last_action]
-        alert_class = (
-            "action-alert"
-            if st.session_state.teacher_alert
-            or st.session_state.status == "caught"
-            else "action-success"
-            if st.session_state.last_action == "☕ Nghỉ ngơi lấy sức"
-            else ""
-        )
-
-        st.markdown(
-            f"""
-            <div class="action-effect {alert_class}">
-                <div class="big-icon">{action_info["icon"]}</div>
-                <h3>{action_info["title"]}</h3>
-                <p>{action_info["description"]}</p>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
+    st.markdown('<div class="classroom">', unsafe_allow_html=True)
 
     st.markdown(
-        f'<div class="scene-caption">'
-        f'🔔 {html.escape(st.session_state.scene)}'
-        f'</div>',
-        unsafe_allow_html=True,
+        '<div class="blackboard">'
+        '🏫 LỚP HỌC — ĐẠI CHIẾN PHÒNG THI<br>'
+        '📝 KIỂM TRA ĐANG DIỄN RA'
+        '</div>',
+        unsafe_allow_html=True
     )
 
-with right:
-    st.subheader("📋 NHẬT KÝ PHÒNG THI")
-
-    with st.container(border=True):
-        for item in st.session_state.log[:7]:
-            st.write("• " + item)
-
-    st.subheader("🎯 NHIỆM VỤ")
-    st.write(f"Đạt ít nhất **{st.session_state.target} điểm**.")
-    st.progress(
-        min(st.session_state.score / st.session_state.target, 1.0)
-    )
-    st.write(
-        f"Tiến độ: {st.session_state.score}/"
-        f"{st.session_state.target} điểm"
-    )
-
-    st.subheader("👨‍🏫 GIÁM THỊ")
-    if st.session_state.status == "caught":
-        st.error("Bạn đã bị phát hiện!")
-    elif st.session_state.teacher_alert:
-        st.warning("Giám thị đang chú ý đến bạn!")
+    if alert:
+        st.markdown(
+            '<div class="alert-box">'
+            '🚨 GIÁO VIÊN ĐANG CHÚ Ý ĐẾN BẠN!'
+            '</div>',
+            unsafe_allow_html=True
+        )
     else:
-        st.success("Giám thị chưa phát hiện điều bất thường.")
+        st.markdown(
+            '<div class="safe-box">'
+            '🤫 Hãy quản lý điểm số, thể lực và mức nghi ngờ.'
+            '</div>',
+            unsafe_allow_html=True
+        )
 
+    st.markdown("### 👩‍🏫 Khu vực giáo viên")
+    st.markdown(
+        '<div class="teacher">👩‍🏫<br>GIÁO VIÊN</div>',
+        unsafe_allow_html=True
+    )
 
-# =====================================================
-# 7. NÚT ĐIỀU KHIỂN VÀ KẾT QUẢ
-# =====================================================
+    st.markdown("### 👨‍🎓 Khu vực học sinh")
+    st.markdown(
+        '<div class="student">🧑‍🎓<br>Bạn</div>'
+        '<div class="student">👨‍🎓<br>Bạn A</div>'
+        '<div class="student">👩‍🎓<br>Bạn B</div>'
+        '<div class="student">🧑‍🎓<br>Bạn C</div>',
+        unsafe_allow_html=True
+    )
 
-st.divider()
-st.subheader("🎮 BẠN MUỐN LÀM GÌ TRONG LƯỢT NÀY?")
+    st.markdown("### 🪑 Bàn thi")
+    st.markdown(
+        '<div class="desk">📄 Bài thi</div>'
+        '<div class="desk">✏️ Bút</div>'
+        '<div class="desk">📚 Sách</div>',
+        unsafe_allow_html=True
+    )
+
+    st.markdown("</div>", unsafe_allow_html=True)
+
+    # Hiển thị chỉ số
+    st.markdown("### 📊 Thông tin người chơi")
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        st.metric("⭐ Điểm số", score)
+        st.metric("👀 Mức nghi ngờ", f"{suspicion}/100")
+
+    with col2:
+        st.metric("⚡ Thể lực", f"{energy}/100")
+        st.metric("🎮 Lượt chơi", f"{turn}/{st.session_state.max_turns}")
+
+    st.progress(min(score / max(st.session_state.target, 1), 1.0))
+    st.caption(f"Mục tiêu điểm số: {st.session_state.target}")
+
+    st.progress(suspicion / 100)
+    st.caption("Mức nghi ngờ: càng cao càng nguy hiểm.")
+
+    st.progress(energy / 100)
+    st.caption("Thể lực: cần duy trì trên 0.")
+
+    st.markdown(f"**🎬 Hành động gần nhất:** {action or 'Chưa thực hiện'}")
+    st.markdown(f"**{icon} Sự kiện:** {event or 'Chưa có sự kiện mới'}")
+
+    if status == "playing":
+        st.info("🟢 Trạng thái: Đang chơi")
+    elif status == "won":
+        st.success("🏆 CHIẾN THẮNG! Bạn đã hoàn thành mục tiêu.")
+    else:
+        st.error("❌ GAME OVER! Hãy thử lại.")
+
+# ==========================================
+# 6. TIÊU ĐỀ GAME
+# ==========================================
+st.markdown(
+    '<div class="main-title">📝 ĐẠI CHIẾN PHÒNG THI</div>',
+    unsafe_allow_html=True
+)
+st.markdown(
+    '<div class="subtitle">'
+    'Game mô phỏng lớp học — quản lý điểm số và mức độ nghi ngờ'
+    '</div>',
+    unsafe_allow_html=True
+)
+
+# ==========================================
+# 7. CHỌN ĐỘ KHÓ
+# ==========================================
+st.markdown("### 🎯 Chọn độ khó")
+
+difficulty = st.selectbox(
+    "Độ khó của ván chơi",
+    ["Dễ", "Trung bình", "Khó"],
+    index=["Dễ", "Trung bình", "Khó"].index(
+        st.session_state.level
+        if st.session_state.level in ["Dễ", "Trung bình", "Khó"]
+        else "Dễ"
+    )
+)
+
+if st.button("🔄 Bắt đầu ván mới", use_container_width=True):
+    new_game(difficulty)
+    st.rerun()
+
+st.caption(
+    "Dễ: 15 lượt, mục tiêu 50 điểm. "
+    "Trung bình: 12 lượt, mục tiêu 70 điểm. "
+    "Khó: 10 lượt, mục tiêu 90 điểm."
+)
+
+# ==========================================
+# 8. HIỂN THỊ LỚP HỌC VÀ CHỈ SỐ
+# ==========================================
+draw_classroom()
+
+# ==========================================
+# 9. NÚT HÀNH ĐỘNG
+# ==========================================
+st.markdown("---")
+st.markdown("### 🕹️ Chọn hành động")
 
 if st.session_state.status == "playing":
-    action_names = list(ACTIONS.keys())
-    cols = st.columns(4)
+    col1, col2 = st.columns(2)
 
-    for i, action in enumerate(action_names):
-        with cols[i]:
-            if st.button(
-                action,
-                key=f"action_button_{i}",
-                use_container_width=True,
-            ):
-                take_action(action)
-                st.rerun()
+    with col1:
+        if st.button("📚 Tập trung làm bài", use_container_width=True):
+            do_action("Tập trung làm bài")
+            st.rerun()
+
+        if st.button("👀 Quan sát giáo viên", use_container_width=True):
+            do_action("Quan sát giáo viên")
+            st.rerun()
+
+        if st.button("☕ Nghỉ ngơi", use_container_width=True):
+            do_action("Nghỉ ngơi")
+            st.rerun()
+
+    with col2:
+        if st.button("📖 Xem tài liệu", use_container_width=True):
+            do_action("Xem tài liệu")
+            st.rerun()
+
+        if st.button("🤝 Trao đổi với bạn", use_container_width=True):
+            do_action("Trao đổi với bạn")
+            st.rerun()
 
 else:
-    if st.session_state.status == "caught":
-        st.error("🚨 BẠN ĐÃ BỊ GIÁM THỊ PHÁT HIỆN!")
-    elif st.session_state.status == "exhausted":
-        st.warning("😵 Bạn đã hết thể lực trước khi hoàn thành kỳ thi.")
-    elif st.session_state.score >= st.session_state.target:
-        st.success("🏆 CHIẾN THẮNG! Bạn đã đạt mục tiêu điểm.")
-    else:
-        st.warning("📘 Kỳ thi kết thúc nhưng bạn chưa đạt mục tiêu điểm.")
+    st.warning("Ván chơi đã kết thúc. Hãy bắt đầu ván mới để chơi tiếp.")
 
-    st.write(f"**Tổng điểm:** {st.session_state.score}")
-    st.write(f"**Mức nghi ngờ:** {st.session_state.suspicion}/100")
-    st.write(f"**Độ khó:** {st.session_state.level}")
-
-    if st.button("🔁 CHƠI LẠI", type="primary"):
-        new_game(st.session_state.level)
+    if st.button("🎮 Chơi lại ngay", use_container_width=True):
+        new_game(difficulty)
         st.rerun()
 
-st.divider()
-st.caption(
-    "GIAN LẬN TRONG THI • PIXEL CLASSROOM 2D • Phiên bản 2.0"
-)
+# ==========================================
+# 10. NHẬT KÝ TRÒ CHƠI
+# ==========================================
+st.markdown("---")
+st.markdown("### 📜 Nhật ký trò chơi")
+
+with st.expander("Xem lịch sử hành động", expanded=True):
+    if st.session_state.log:
+        for item in reversed(st.session_state.log[-10:]):
+            st.write("• " + item)
+    else:
+        st.write("Chưa có hoạt động nào.")
+
+# ==========================================
+# 11. HƯỚNG DẪN
+# ==========================================
+with st.expander("❓ Hướng dẫn chơi"):
+    st.markdown("""
+    **Mục tiêu:** Đạt đủ điểm trước khi hết lượt.
+
+    - 📚 **Tập trung làm bài:** Tăng điểm, tiêu hao thể lực.
+    - 👀 **Quan sát giáo viên:** Giảm nhẹ mức nghi ngờ.
+    - ☕ **Nghỉ ngơi:** Hồi phục thể lực.
+    - 📖 **Xem tài liệu:** Có thể tăng điểm nhưng tăng nghi ngờ.
+    - 🤝 **Trao đổi với bạn:** Có cơ hội tăng điểm nhưng có rủi ro.
+
+    **Điều kiện chiến thắng:** Đạt mục tiêu điểm số.
+
+    **Điều kiện thất bại:** Bị phát hiện, hết thể lực hoặc hết lượt mà chưa đạt mục tiêu.
+    """)
+```
